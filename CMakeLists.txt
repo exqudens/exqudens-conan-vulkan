@@ -11,7 +11,7 @@ message("project: '${PROJECT_NAME}-${PROJECT_VERSION}'")
 
 find_program(CONAN_COMMAND NAMES "conan.exe" "conan" REQUIRED)
 
-if(NOT EXISTS "${PROJECT_BINARY_DIR}/googletest-release-1.11.0.zip")
+if(NOT EXISTS "${PROJECT_BINARY_DIR}/VulkanSDK-${PROJECT_VERSION}-Installer.exe")
     file(DOWNLOAD
         #"https://sdk.lunarg.com/sdk/download/${PROJECT_VERSION}/windows/VulkanSDK-${PROJECT_VERSION}-Installer.exe"
         "file:///C:/install/VulkanSDK-${PROJECT_VERSION}-Installer.exe"
@@ -34,20 +34,19 @@ if(NOT EXISTS "${PROJECT_BINARY_DIR}/VulkanSDK-${PROJECT_VERSION}")
 endif()
 
 execute_process(
-    COMMAND "${CONAN_COMMAND}" "search" "vulkan"
-    OUTPUT_VARIABLE "CONAN_SEARCH_VULKAN_RESULT"
+    COMMAND "${CONAN_COMMAND}" "search" "${PROJECT_NAME}/${PROJECT_VERSION}"
+    OUTPUT_VARIABLE "CONAN_SEARCH_RESULT"
     COMMAND_ECHO "STDOUT"
     OUTPUT_STRIP_TRAILING_WHITESPACE
     ENCODING "UTF-8"
     COMMAND_ERROR_IS_FATAL ANY
 )
 
-if("${CONAN_SEARCH_VULKAN_RESULT}" MATCHES "Existing package recipes.+")
-    string(JOIN "\n" message
-        "conan output:"
-        "${CONAN_SEARCH_VULKAN_RESULT}"
-    )
-    message("${message}")
+if("${CONAN_SEARCH_RESULT}" MATCHES "Existing package recipes.+")
+    string(REPLACE ":" ";" CONAN_SEARCH_RESULT "${CONAN_SEARCH_RESULT}")
+    list(GET CONAN_SEARCH_RESULT 1 CONAN_SEARCH_RESULT)
+    string(STRIP ${CONAN_SEARCH_RESULT} CONAN_SEARCH_RESULT)
+    message("Existing package recipes: ${CONAN_SEARCH_RESULT}")
     return()
 endif()
 
