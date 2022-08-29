@@ -9,15 +9,37 @@ project("${NAME}" VERSION "${VERSION}" LANGUAGES "NONE")
 
 message("project: '${PROJECT_NAME}-${PROJECT_VERSION}'")
 
-find_program(CONAN_COMMAND NAMES "conan.exe" "conan" REQUIRED)
-
-if(NOT EXISTS "${PROJECT_BINARY_DIR}/VulkanSDK-${PROJECT_VERSION}-Installer.exe")
+cmake_path(CONVERT "$ENV{HOME}" TO_CMAKE_PATH_LIST HOME NORMALIZE)
+if(NOT EXISTS "${HOME}" OR NOT IS_DIRECTORY "${HOME}")
+    message(FATAL_ERROR "HOME: '${HOME}' not exists or not directory.")
+endif()
+set(CMAKE_HOME "${HOME}/.cmake")
+if(NOT EXISTS "${CMAKE_HOME}")
+    file(MAKE_DIRECTORY "${CMAKE_HOME}")
+endif()
+if(NOT EXISTS "${CMAKE_HOME}" OR NOT IS_DIRECTORY "${CMAKE_HOME}")
+    message(FATAL_ERROR "CMAKE_HOME: '${CMAKE_HOME}' not exists or not directory.")
+endif()
+set(CMAKE_DOWNLOADS "${CMAKE_HOME}/downloads")
+if(NOT EXISTS "${CMAKE_DOWNLOADS}")
+    file(MAKE_DIRECTORY "${CMAKE_DOWNLOADS}")
+endif()
+if(NOT EXISTS "${CMAKE_DOWNLOADS}" OR NOT IS_DIRECTORY "${CMAKE_DOWNLOADS}")
+    message(FATAL_ERROR "CMAKE_DOWNLOADS: '${CMAKE_DOWNLOADS}' is not directory.")
+endif()
+if(NOT EXISTS "${CMAKE_DOWNLOADS}/VulkanSDK-${PROJECT_VERSION}-Installer.exe")
+    message("download ...")
     file(DOWNLOAD
-        #"https://sdk.lunarg.com/sdk/download/${PROJECT_VERSION}/windows/VulkanSDK-${PROJECT_VERSION}-Installer.exe"
-        "file:///C:/install/VulkanSDK-${PROJECT_VERSION}-Installer.exe"
-        "${PROJECT_BINARY_DIR}/VulkanSDK-${PROJECT_VERSION}-Installer.exe"
+        "https://sdk.lunarg.com/sdk/download/${PROJECT_VERSION}/windows/VulkanSDK-${PROJECT_VERSION}-Installer.exe"
+        "${CMAKE_DOWNLOADS}/VulkanSDK-${PROJECT_VERSION}-Installer.exe"
         EXPECTED_MD5 "13464d539a0a30392637fc30011aae41"
     )
+    message("... done")
+endif()
+if(NOT EXISTS "${PROJECT_BINARY_DIR}/VulkanSDK-${PROJECT_VERSION}-Installer.exe")
+    message("copy from downloads ...")
+    file(COPY "${CMAKE_DOWNLOADS}/VulkanSDK-${PROJECT_VERSION}-Installer.exe" DESTINATION "${PROJECT_BINARY_DIR}")
+    message("... done")
 endif()
 if(NOT EXISTS "${PROJECT_BINARY_DIR}/VulkanSDK-${PROJECT_VERSION}")
     file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/VulkanSDK-${PROJECT_VERSION}")
@@ -32,6 +54,8 @@ if(NOT EXISTS "${PROJECT_BINARY_DIR}/VulkanSDK-${PROJECT_VERSION}")
         )
     endif()
 endif()
+
+find_program(CONAN_COMMAND NAMES "conan.exe" "conan" REQUIRED)
 
 execute_process(
     COMMAND "${CONAN_COMMAND}" "search" "${PROJECT_NAME}/${PROJECT_VERSION}"
