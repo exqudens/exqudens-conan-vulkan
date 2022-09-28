@@ -29,11 +29,17 @@ if(NOT EXISTS "${CMAKE_DOWNLOADS}" OR NOT IS_DIRECTORY "${CMAKE_DOWNLOADS}")
 endif()
 if(NOT EXISTS "${CMAKE_DOWNLOADS}/VulkanSDK-${PROJECT_VERSION}-Installer.exe")
     message("download ...")
+    set(EXPECTED_FILE_DOWNLOAD_MD5 "36775e48880a7ce023099091c3fbff74")
+    file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/tmp")
     file(DOWNLOAD
         "https://sdk.lunarg.com/sdk/download/${PROJECT_VERSION}/windows/VulkanSDK-${PROJECT_VERSION}-Installer.exe"
-        "${CMAKE_DOWNLOADS}/VulkanSDK-${PROJECT_VERSION}-Installer.exe"
-        EXPECTED_MD5 "13464d539a0a30392637fc30011aae41"
+        "${PROJECT_BINARY_DIR}/tmp/VulkanSDK-${PROJECT_VERSION}-Installer.exe"
     )
+    file(MD5 "${PROJECT_BINARY_DIR}/tmp/VulkanSDK-${PROJECT_VERSION}-Installer.exe" ACTUAL_FILE_DOWNLOAD_MD5)
+    if(NOT "${EXPECTED_FILE_DOWNLOAD_MD5}" STREQUAL "${ACTUAL_FILE_DOWNLOAD_MD5}")
+        message(FATAL_ERROR "EXPECTED_FILE_DOWNLOAD_MD5: '${EXPECTED_FILE_DOWNLOAD_MD5}' not equal to ACTUAL_FILE_DOWNLOAD_MD5: '${ACTUAL_FILE_DOWNLOAD_MD5}'")
+    endif()
+    file(COPY "${PROJECT_BINARY_DIR}/tmp/VulkanSDK-${PROJECT_VERSION}-Installer.exe" DESTINATION "${CMAKE_DOWNLOADS}")
     message("... done")
 endif()
 if(NOT EXISTS "${PROJECT_BINARY_DIR}/VulkanSDK-${PROJECT_VERSION}-Installer.exe")
