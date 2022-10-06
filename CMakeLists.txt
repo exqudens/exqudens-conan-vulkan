@@ -9,7 +9,12 @@ project("${NAME}" VERSION "${VERSION}" LANGUAGES "NONE")
 
 message("project: '${PROJECT_NAME}-${PROJECT_VERSION}'")
 
-cmake_path(CONVERT "$ENV{HOME}" TO_CMAKE_PATH_LIST HOME NORMALIZE)
+cmake_path(CONVERT "$ENV{CMAKE_USER_HOME}" TO_CMAKE_PATH_LIST CMAKE_USER_HOME NORMALIZE)
+if("" STREQUAL "${CMAKE_USER_HOME}")
+    cmake_path(CONVERT "$ENV{HOME}" TO_CMAKE_PATH_LIST HOME NORMALIZE)
+else()
+    set(HOME "${CMAKE_USER_HOME}")
+endif()
 if(NOT EXISTS "${HOME}" OR NOT IS_DIRECTORY "${HOME}")
     message(FATAL_ERROR "HOME: '${HOME}' not exists or not directory.")
 endif()
